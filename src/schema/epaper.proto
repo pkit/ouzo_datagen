@@ -1,0 +1,41 @@
+message Document
+{
+	required int64 DocId = 1;
+	optional group Links = 2 
+	{
+		repeated int64 Backward = 3 ;
+		repeated int64 Forward = 4; 
+	}
+	repeated group Name = 5
+	{
+		repeated group Language = 6 
+		{
+			required string Code = 7;
+			optional string Country = 8; 
+		}
+		optional string Url = 9; 
+	}
+
+	required int64 SessionID = 10;
+	required int64 UserID = 11;
+	required int64 UserGroup = 12;
+	required int32 clientIP = 13;
+	optional string country = 14;
+	optional string Agent = 15;
+	
+	optional group Sales = 16
+	{
+		required int32 productId = 17;
+		required string productName = 18;
+		required int32 sale = 19;
+	}
+	
+	repeated group Requests = 20
+	{
+		required int64 RequestID = 21;
+		required int64 RequestTime = 22;
+		required int64 ResponseTime = 23;
+		required string URL = 24;
+		required string RequestData = 25;
+	}
+}
