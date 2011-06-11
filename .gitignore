@@ -1,1 +1,8 @@
 /autom4te.cache
+/missing
+/install-sh
+/config.sub
+/configure
+/config.status
+/depcomp
+/config.guess
