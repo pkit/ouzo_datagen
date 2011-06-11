@@ -15,6 +15,7 @@
 #define PRODUCT_COUNT	100
 #define SALE_COUNT		1000
 #define URL_COUNT		500
+#define VARIABLE_COUNT	50
 
 #define UGROUP_BASE				1
 #define UID_BASE				12345

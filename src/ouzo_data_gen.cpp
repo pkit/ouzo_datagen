@@ -94,12 +94,14 @@ void generate_data_set(int n)
 {
 	DocumentsBuilder builder;
 	DremelWriter* writer = new DremelWriter();
-	cout << "GENERATING...";
+	cout << "GENERATING...\n";
+
 	writer->open();
 	for (int i = 0; i < n; i++)
 	{
 		Document* doc = builder.buildDocument();
 		writer->write(doc);
+		//cout<<doc->requests_size()<<"\n";
 		delete doc;
 	}
 	writer->close();
@@ -109,7 +111,7 @@ void generate_data_set(int n)
 int main()
 {
 	/*FOR TEST DATA GENERATION*/
-	DocumentsBuilder builder;
+//	DocumentsBuilder builder;
 //	Document* doc = builder.buildDocument();
 //	string s = DocumentsBuilder::toString(doc);
 //	cout << s << "\n";
@@ -122,6 +124,6 @@ int main()
 //	cout << "DONE\n";
 
 	/*FOR GENERATE DATA*/
-		generate_data_set(10000);
+	generate_data_set(1000000);
 	return 0;
 }

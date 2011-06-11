@@ -9,7 +9,7 @@
 #include "rand_utils.h"
 #include <sstream>
 #include <iostream>
-#include <stdio.h>
+#include <cstdio>
 
 DocumentsBuilder::DocumentsBuilder()
 {
@@ -31,17 +31,46 @@ DocumentsBuilder::DocumentsBuilder()
 
 	for (int i = 0; i < URL_COUNT; i++)
 	{
-		int len = randint(4, 20);
+		if (rand() < (RAND_MAX / 10000)) //0.01%
+		{
+			urls[i] = "http://www.ouzo.com/abcdef";
+			printf(urls[i]);
+		}
+		else
+		{
+			int len = randint(4, 20);
+			char* name = (char*) malloc(len);
+
+			randstr(name, len, RAND_STR_LOWER_CASE_LETTERS);
+			int dom = randint(8);
+			char* url = (char*) malloc(len + strlen(domains[dom]) + strlen("http://") + 1);
+			sprintf(url, "http://%s.%s", name, domains[dom]);
+			free(name);
+			urls[i] = url;
+		}
+		//printf("%s\n", url);
+	}
+
+	for (int i = 0; i < VARIABLE_COUNT; i++)
+	{
+		int len = randint(2, 8);
 		char* name = (char*) malloc(len);
 
 		randstr(name, len, RAND_STR_LOWER_CASE_LETTERS);
-		int dom = randint(8);
-		char* url = (char*) malloc(len + strlen(domains[dom]) + strlen("http://") + 1);
-		sprintf(url, "http://%s.%s", name, domains[dom]);
-		free(name);
-		urls[i] = url;
+		variables[i] = name;
 		//printf("%s\n", url);
 	}
+
+	for (int i = 0; i < 100000; i++)
+	{
+		int len = randint(10, 25);
+		char* name = (char*) malloc(len);
+
+		randstr(name, len, RAND_STR_LOWER_CASE_LETTERS);
+		new_country[i] = name;
+		//printf("%s\n", url);
+	}
+
 }
 
 DocumentsBuilder::~DocumentsBuilder()
@@ -97,7 +126,17 @@ void DocumentsBuilder::fillRequest(Document_Requests* request)
 	int url_id = randint(URL_COUNT);
 	request->set_url(urls[url_id]);
 
-	request->set_requestdata("abc=123");//TODO
+	stringstream ss;
+
+	int var_count = randint(5, 10);
+	for (int i = 0; i < var_count; i++)
+	{
+		int var_indx = randint(VARIABLE_COUNT);
+		int val = randint(100);
+		ss << variables[var_indx] << "=" << val << "&";
+	}
+
+	request->set_requestdata(ss.str());
 }
 
 void DocumentsBuilder::fillName(Document_Name* name)
@@ -163,11 +202,13 @@ void DocumentsBuilder::fillDocument(Document* doc)
 	doc->set_sessionid(SESSION_ID);
 	doc->set_userid(randint(UID_COUNT));
 	doc->set_usergroup(randint(GROUP_COUNT));
+	//doc->set_usergroup(randint(10000));
 	doc->set_clientip(randint(IP_COUNT));
 
 	if (rand() < COUNTRY_RATIO)
 	{
-		doc->set_country(COUNTRY_NAME[randint(COUNTRY_COUNT)]);
+		//doc->set_country(COUNTRY_NAME[randint(COUNTRY_COUNT)]);
+		doc->set_country(new_country[randint(100000)]);
 	}
 
 	if (rand() < AGENT_RATIO)
@@ -271,16 +312,15 @@ bool DocumentsBuilder::compare(Document* d1, Document* d2)
 	string s1 = d1->SerializeAsString();
 	string s2 = d2->SerializeAsString();
 
-
 	if (s1 == s2) return true;
 
-//	cout<<s1<<"\n";
-//	cout<<"\n";
-//	cout<<s2<<"\n";
+	//	cout<<s1<<"\n";
+	//	cout<<"\n";
+	//	cout<<s2<<"\n";
 
-//	cout<<DocumentsBuilder::toString(d1)<<"\n";
-//	cout<<"\n";
-//	cout<<DocumentsBuilder::toString(d2)<<"\n";
+	//	cout<<DocumentsBuilder::toString(d1)<<"\n";
+	//	cout<<"\n";
+	//	cout<<DocumentsBuilder::toString(d2)<<"\n";
 
 
 	return false;

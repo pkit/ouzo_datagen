@@ -25,6 +25,8 @@ private:
 	char* agents[AGENT_COUNT];
 	char* product_names[PRODUCT_COUNT];
 	char* urls[URL_COUNT];
+	char* variables[URL_COUNT];
+	char* new_country[100000];
 
 	void fillSale(Document_Sales* sale);
 	void fillRequest(Document_Requests* request);

@@ -285,8 +285,11 @@ void DremelReader::open_files_for(const Descriptor* desc)
 		{
 			int number = field->number();
 			string name = "dremel/" + field->full_name();
-			levels[number] = fopen(name.append(".level").c_str(), "rb");
-			datas[number] = fopen(name.append(".dremel").c_str(), "rb");
+
+			string level_name = name + ".level";
+			string data_name = name + ".dremel";
+			levels[number] = fopen(level_name.c_str(), "rb");
+			datas[number] = fopen(data_name.c_str(), "rb");
 
 			struct stat buf;
 			fstat(fileno(levels[number]), &buf);
@@ -343,10 +346,14 @@ string DremelReader::read_string(int fno)
 {
 	int32_t len;
 	fread(&len, 4, 1, datas[fno]);
-	char* str = new char[len];
-	fread(str, len, 1, datas[fno]);
-	string ret(str, len);
-	if (len & 1) fread(str, 1, 1, datas[fno]); //alignment
+	size_t hashcode;
+	fread(&hashcode, sizeof(size_t), 1, datas[fno]);
+	len++;
+	int padding_count = len % 4;
+	char* str = new char[len+padding_count];
+
+	fread(str, len+padding_count, 1, datas[fno]);
+	string ret(str, len-1);
 	delete str;
 	return ret;
 }

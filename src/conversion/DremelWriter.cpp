@@ -129,11 +129,11 @@ void DremelWriter::write(Document* doc)
 	write_int(Document::kClientIPFieldNumber, doc->clientip(), 0, 0);
 
 	if (!doc->has_country())
-		write_null(Document::kCountryFieldNumber, 0, -1);
+		write_null(Document::kCountryFieldNumber, 0, -1); //BUG
 	else write_string(Document::kCountryFieldNumber, doc->country(), 0, 0);
 
 	if (!doc->has_agent())
-		write_null(Document::kAgentFieldNumber, 0, -1);
+		write_null(Document::kAgentFieldNumber, 0, -1); //BUG
 	else write_string(Document::kAgentFieldNumber, doc->agent(), 0, 0);
 
 	if (!doc->has_sales())
@@ -193,16 +193,16 @@ void DremelWriter::open_files_for(const Descriptor* desc)
 		{
 			int number = field->number();
 			string name = "dremel/" + field->full_name();
-			levels[number] = fopen(name.append(".level").c_str(), "wb");
-			name = "dremel/" + field->full_name();
-			datas[number] = fopen(name.append(".dremel").c_str(), "wb");
+			string level_name = name + ".level";
+			string data_name = name + ".dremel";
+			levels[number] = fopen(level_name.c_str(), "wb");
+			datas[number] = fopen(data_name.c_str(), "wb");
 		}
 	}
 }
 
 void DremelWriter::close_files_for(const Descriptor* desc)
 {
-
 	int count = desc->field_count();
 
 	for (int i = 0; i < count; i++)
@@ -252,6 +252,14 @@ void DremelWriter::write_long(int fno, int64_t val, char rep, char def)
 	//cout << fno << "\t" << (int) rep << "\t" << (int) def << "\t" << val << "\n";
 }
 
+static inline size_t hash_code(const char* s)
+{
+	size_t ret = *s;
+	if (ret) for (++s; *s; ++s)
+		ret = (ret << 5) - ret + *s;
+	return ret;
+}
+
 void DremelWriter::write_string(int fno, char* str, int len, char rep, char def)
 {
 	char tmp[4];
@@ -259,18 +267,23 @@ void DremelWriter::write_string(int fno, char* str, int len, char rep, char def)
 	tmp[1] = def;
 	fwrite(tmp, 2, 1, levels[fno]);
 	fwrite(&len, 4, 1, datas[fno]);
+	size_t hashcode = hash_code(str);
+	fwrite(&hashcode, sizeof(size_t), 1, datas[fno]);
 
 	if (len > 0)
 	{
 		fwrite(str, len, 1, datas[fno]);
 	}
 
-	if (len & 1) //for alignment
+	len++;
+	tmp[0] = 0;
+	tmp[1] = 0;
+	tmp[2] = 0;
+	tmp[3] = 0;
 
-	{
-		tmp[0] = 0;
-		fwrite(tmp, 1, 1, datas[fno]);
-	}
+	int padding_count = len % 4;
+	padding_count++; //null terminal C string
+	fwrite(tmp, padding_count, 1, datas[fno]); //one byte for c string end indicator, one for padding
 	//cout << fno << "\t" << (int) rep << "\t" << (int) def << "\t" << str << "\n";
 }
 
@@ -283,16 +296,24 @@ void DremelWriter::write_string(int fno, string str, char rep, char def)
 	fwrite(tmp, 2, 1, levels[fno]);
 	fwrite(&len, 4, 1, datas[fno]);
 
+	size_t hashcode = hash_code(str.c_str());
+	fwrite(&hashcode, sizeof(size_t), 1, datas[fno]);
+
 	if (len > 0)
 	{
 		fwrite(str.c_str(), len, 1, datas[fno]);
 	}
 
-	if (len & 1) //for alignment
-	{
-		tmp[0] = 0;
-		fwrite(tmp, 1, 1, datas[fno]);
-	}
+	len++;
+	tmp[0] = 0;
+	tmp[1] = 0;
+	tmp[2] = 0;
+	tmp[3] = 0;
+
+	int padding_count = len % 4;
+	padding_count++; //null terminal C string
+	fwrite(tmp, padding_count, 1, datas[fno]); //one byte for c string end indicator, one for padding
+
 	//cout << fno << "\t" << (int) rep << "\t" << (int) def << "\t" << str << "\n";
 }
 
