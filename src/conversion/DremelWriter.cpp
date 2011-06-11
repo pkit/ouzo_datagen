@@ -194,6 +194,7 @@ void DremelWriter::open_files_for(const Descriptor* desc)
 			int number = field->number();
 			string name = "dremel/" + field->full_name();
 			levels[number] = fopen(name.append(".level").c_str(), "wb");
+			name = "dremel/" + field->full_name();
 			datas[number] = fopen(name.append(".dremel").c_str(), "wb");
 		}
 	}
