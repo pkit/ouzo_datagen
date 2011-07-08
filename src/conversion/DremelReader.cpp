@@ -9,7 +9,7 @@
 #include <iostream>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <cstdio>
+#include <stdio.h>
 
 DremelReader::DremelReader()
 {
@@ -19,10 +19,10 @@ DremelReader::~DremelReader()
 {
 }
 
-void DremelReader::open()
+void DremelReader::open(string path)
 {
 	const Descriptor* desc = Document::descriptor();
-	open_files_for(desc);
+	open_files_for(desc, path);
 }
 
 void DremelReader::close()
@@ -178,14 +178,14 @@ Document* DremelReader::read()
 	doc->set_clientip(clientip);
 
 	take(Document::kCountryFieldNumber, rep, def);
-	if (def == 0)//not null
+	if (def == 1)//not null
 	{
 		string country = read_string(Document::kCountryFieldNumber);
 		doc->set_country(country);
 	}
 
 	take(Document::kAgentFieldNumber, rep, def);
-	if (def == 0)//not null
+	if (def == 1)//not null
 	{
 		string agent = read_string(Document::kAgentFieldNumber);
 		doc->set_agent(agent);
@@ -268,7 +268,7 @@ Document* DremelReader::read()
 	return doc;
 }
 
-void DremelReader::open_files_for(const Descriptor* desc)
+void DremelReader::open_files_for(const Descriptor* desc, string path)
 {
 	int count = desc->field_count();
 
@@ -279,12 +279,12 @@ void DremelReader::open_files_for(const Descriptor* desc)
 		if (field->type() == FieldDescriptor::TYPE_GROUP)
 		{
 			const Descriptor* d = field->message_type();
-			open_files_for(d);
+			open_files_for(d, path);
 		}
 		else
 		{
 			int number = field->number();
-			string name = "dremel/" + field->full_name();
+			string name = path + "/"+field->full_name();
 
 			string level_name = name + ".level";
 			string data_name = name + ".dremel";

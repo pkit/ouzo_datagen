@@ -24,14 +24,14 @@ public:
 	DremelWriter();
 	virtual ~DremelWriter();
 
-	void open();
+	void open(string path);
 	void close();
 	void write(Document* doc);
 private:
 	FILE* levels[MAX_COL];
 	FILE* datas[MAX_COL];
 
-	void open_files_for(const Descriptor* desc);
+	void open_files_for(const Descriptor* desc, string path);
 	void close_files_for(const Descriptor* desc);
 
 	void write_null(int fno, char rep, char def);

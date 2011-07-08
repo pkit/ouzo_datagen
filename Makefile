@@ -115,7 +115,7 @@ CXX = g++
 CXXDEPMODE = depmode=gcc3
 CXXFLAGS = -g -O2
 CYGPATH_W = echo
-DEFS = -DPACKAGE_NAME=\"ouzo_datagen\" -DPACKAGE_TARNAME=\"ouzo_datagen\" -DPACKAGE_VERSION=\"1.0\" -DPACKAGE_STRING=\"ouzo_datagen\ 1.0\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DPACKAGE=\"ouzo_datagen\" -DVERSION=\"1.0\" -DHAVE_LIBPROTOBUF=1
+DEFS = -DPACKAGE_NAME=\"ouzo_datagen\" -DPACKAGE_TARNAME=\"ouzo_datagen\" -DPACKAGE_VERSION=\"1.0\" -DPACKAGE_STRING=\"ouzo_datagen\ 1.0\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DPACKAGE=\"ouzo_datagen\" -DVERSION=\"1.0\" -DHAVE_LIBPROTOBUF=1 -DHAVE_LIBPTHREAD=1 -DHAVE_LIBDL=1
 DEPDIR = .deps
 ECHO_C = 
 ECHO_N = -n
@@ -128,7 +128,7 @@ INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = $(install_sh) -c -s
 LDFLAGS = 
 LIBOBJS = 
-LIBS = -lprotobuf 
+LIBS = -ldl -lpthread -lprotobuf 
 LTLIBOBJS = 
 MAKEINFO = ${SHELL} /home/kit/workspace/ouzo_datagen/missing --run makeinfo
 MKDIR_P = /bin/mkdir -p

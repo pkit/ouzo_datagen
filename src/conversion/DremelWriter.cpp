@@ -7,7 +7,8 @@
 
 #include "DremelWriter.h"
 #include <iostream>
-#include <cstdio>
+#include <stdio.h>
+#include <unistd.h>
 
 DremelWriter::DremelWriter()
 {
@@ -19,10 +20,15 @@ DremelWriter::~DremelWriter()
 
 }
 
-void DremelWriter::open()
+void DremelWriter::open(string path)
 {
+	if (access(path.c_str(), F_OK)!=0)
+	{
+		printf("Folder %s is not exist or no permission access\n", path.c_str());
+		exit(1);
+	}
 	const Descriptor* desc = Document::descriptor();
-	open_files_for(desc);
+	open_files_for(desc, path);
 }
 
 void DremelWriter::close()
@@ -128,13 +134,13 @@ void DremelWriter::write(Document* doc)
 	write_long(Document::kUserGroupFieldNumber, doc->usergroup(), 0, 0);
 	write_int(Document::kClientIPFieldNumber, doc->clientip(), 0, 0);
 
-	if (!doc->has_country())
-		write_null(Document::kCountryFieldNumber, 0, -1); //BUG
-	else write_string(Document::kCountryFieldNumber, doc->country(), 0, 0);
+	if (!doc->has_country()) write_null(Document::kCountryFieldNumber, 0, 0); //BUG
+	//write_null(Document::kCountryFieldNumber, 0, -1); //BUG
+	else write_string(Document::kCountryFieldNumber, doc->country(), 0, 1);
 
-	if (!doc->has_agent())
-		write_null(Document::kAgentFieldNumber, 0, -1); //BUG
-	else write_string(Document::kAgentFieldNumber, doc->agent(), 0, 0);
+	if (!doc->has_agent()) write_null(Document::kAgentFieldNumber, 0, 0); //BUG
+	//write_null(Document::kAgentFieldNumber, 0, -1); //BUG
+	else write_string(Document::kAgentFieldNumber, doc->agent(), 0, 1);
 
 	if (!doc->has_sales())
 	{
@@ -176,7 +182,7 @@ void DremelWriter::write(Document* doc)
 	}
 }
 
-void DremelWriter::open_files_for(const Descriptor* desc)
+void DremelWriter::open_files_for(const Descriptor* desc, string path)
 {
 	int count = desc->field_count();
 
@@ -187,17 +193,24 @@ void DremelWriter::open_files_for(const Descriptor* desc)
 		if (field->type() == FieldDescriptor::TYPE_GROUP)
 		{
 			const Descriptor* d = field->message_type();
-			open_files_for(d);
+			open_files_for(d, path);
 		}
 		else
 		{
 			int number = field->number();
-			string name = "dremel/" + field->full_name();
+			string name = path + "/" + field->full_name();
 			string level_name = name + ".level";
 			string data_name = name + ".dremel";
 			levels[number] = fopen(level_name.c_str(), "wb");
 			datas[number] = fopen(data_name.c_str(), "wb");
+			if ((!levels[number]) || (!datas[number]))
+			{
+				perror("Can not open file for writing.\n");
+				exit(1);
+			}
+
 		}
+
 	}
 }
 
@@ -217,8 +230,8 @@ void DremelWriter::close_files_for(const Descriptor* desc)
 		else
 		{
 			int number = field->number();
-			fclose(levels[number]);
-			fclose(datas[number]);
+			if (levels[number]) fclose(levels[number]);
+			if (datas[number]) fclose(datas[number]);
 		}
 	}
 }

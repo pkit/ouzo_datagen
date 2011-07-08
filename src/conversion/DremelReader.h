@@ -24,7 +24,7 @@ class DremelReader: public Reader
 public:
 	DremelReader();
 	virtual ~DremelReader();
-	void open();
+	void open(string path);
 	void close();
 	Document* read();
 
@@ -33,7 +33,7 @@ private:
 	FILE* datas[MAX_COL];
 	int level_len[MAX_COL];
 
-	void open_files_for(const Descriptor* desc);
+	void open_files_for(const Descriptor* desc, string path);
 	void close_files_for(const Descriptor* desc);
 
 	bool take(int fno, char& rep, char& def);

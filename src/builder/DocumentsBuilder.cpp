@@ -9,7 +9,7 @@
 #include "rand_utils.h"
 #include <sstream>
 #include <iostream>
-#include <cstdio>
+#include <stdio.h>
 
 DocumentsBuilder::DocumentsBuilder()
 {
@@ -34,7 +34,7 @@ DocumentsBuilder::DocumentsBuilder()
 		if (rand() < (RAND_MAX / 10000)) //0.01%
 		{
 			urls[i] = "http://www.ouzo.com/abcdef";
-			printf(urls[i]);
+			//printf(urls[i]);
 		}
 		else
 		{
@@ -178,6 +178,12 @@ void DocumentsBuilder::fillDocument(Document* doc)
 		int bwd_count = randint(10);
 		int fwd_count = randint(10);
 
+		while (bwd_count+fwd_count==0)
+		{
+			bwd_count = randint(10);
+			fwd_count = randint(10);
+		}
+
 		for (int i = 0; i < bwd_count; i++)
 		{
 			links->add_backward(rand());
@@ -201,14 +207,14 @@ void DocumentsBuilder::fillDocument(Document* doc)
 	SESSION_ID += session_inc;
 	doc->set_sessionid(SESSION_ID);
 	doc->set_userid(randint(UID_COUNT));
-	doc->set_usergroup(randint(GROUP_COUNT));
+	doc->set_usergroup(randint(10));
 	//doc->set_usergroup(randint(10000));
 	doc->set_clientip(randint(IP_COUNT));
 
 	if (rand() < COUNTRY_RATIO)
 	{
-		//doc->set_country(COUNTRY_NAME[randint(COUNTRY_COUNT)]);
-		doc->set_country(new_country[randint(100000)]);
+		doc->set_country(COUNTRY_NAME[randint(COUNTRY_COUNT)]);
+		//doc->set_country(new_country[randint(100000)]);
 	}
 
 	if (rand() < AGENT_RATIO)
@@ -313,15 +319,5 @@ bool DocumentsBuilder::compare(Document* d1, Document* d2)
 	string s2 = d2->SerializeAsString();
 
 	if (s1 == s2) return true;
-
-	//	cout<<s1<<"\n";
-	//	cout<<"\n";
-	//	cout<<s2<<"\n";
-
-	//	cout<<DocumentsBuilder::toString(d1)<<"\n";
-	//	cout<<"\n";
-	//	cout<<DocumentsBuilder::toString(d2)<<"\n";
-
-
 	return false;
 }

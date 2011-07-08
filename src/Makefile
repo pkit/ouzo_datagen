@@ -49,13 +49,19 @@ am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_ouzo_datagen_OBJECTS = ouzo_data_gen.$(OBJEXT) epaper.pb.$(OBJEXT) \
 	DremelReader.$(OBJEXT) DremelWriter.$(OBJEXT) \
-	DocumentsBuilder.$(OBJEXT)
+	SqliteWriter.$(OBJEXT) DocumentsBuilder.$(OBJEXT) \
+	Database.$(OBJEXT) Query.$(OBJEXT) sqlite3.$(OBJEXT) \
+	ProtobufWriter.$(OBJEXT) ProtobufReader.$(OBJEXT)
 ouzo_datagen_OBJECTS = $(am_ouzo_datagen_OBJECTS)
 ouzo_datagen_LDADD = $(LDADD)
 DEFAULT_INCLUDES = -I.
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
+COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+CCLD = $(CC)
+LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
@@ -80,7 +86,7 @@ CXX = g++
 CXXDEPMODE = depmode=gcc3
 CXXFLAGS = -g -O2
 CYGPATH_W = echo
-DEFS = -DPACKAGE_NAME=\"ouzo_datagen\" -DPACKAGE_TARNAME=\"ouzo_datagen\" -DPACKAGE_VERSION=\"1.0\" -DPACKAGE_STRING=\"ouzo_datagen\ 1.0\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DPACKAGE=\"ouzo_datagen\" -DVERSION=\"1.0\" -DHAVE_LIBPROTOBUF=1
+DEFS = -DPACKAGE_NAME=\"ouzo_datagen\" -DPACKAGE_TARNAME=\"ouzo_datagen\" -DPACKAGE_VERSION=\"1.0\" -DPACKAGE_STRING=\"ouzo_datagen\ 1.0\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DPACKAGE=\"ouzo_datagen\" -DVERSION=\"1.0\" -DHAVE_LIBPROTOBUF=1 -DHAVE_LIBPTHREAD=1 -DHAVE_LIBDL=1
 DEPDIR = .deps
 ECHO_C = 
 ECHO_N = -n
@@ -93,7 +99,7 @@ INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = $(install_sh) -c -s
 LDFLAGS = 
 LIBOBJS = 
-LIBS = -lprotobuf 
+LIBS = -ldl -lpthread -lprotobuf 
 LTLIBOBJS = 
 MAKEINFO = ${SHELL} /home/kit/workspace/ouzo_datagen/missing --run makeinfo
 MKDIR_P = /bin/mkdir -p
@@ -165,11 +171,16 @@ target_vendor = unknown
 top_build_prefix = ../
 top_builddir = ..
 top_srcdir = ..
-ouzo_datagen_SOURCES = ouzo_data_gen.cpp schema/epaper.pb.cc conversion/DremelReader.cpp conversion/DremelWriter.cpp builder/DocumentsBuilder.cpp
+ouzo_datagen_SOURCES = ouzo_data_gen.cpp schema/epaper.pb.cc \
+	 conversion/DremelReader.cpp conversion/DremelWriter.cpp \
+	 conversion/SqliteWriter.cpp builder/DocumentsBuilder.cpp \
+	 conversion/sqlite/Database.cpp conversion/sqlite/Query.cpp \
+	 conversion/sqlite/sqlite3.c conversion/ProtobufWriter.cpp conversion/ProtobufReader.cpp
+
 all: all-am
 
 .SUFFIXES:
-.SUFFIXES: .cc .cpp .o .obj
+.SUFFIXES: .c .cc .cpp .o .obj
 $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
@@ -247,11 +258,45 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+include ./$(DEPDIR)/Database.Po
 include ./$(DEPDIR)/DocumentsBuilder.Po
 include ./$(DEPDIR)/DremelReader.Po
 include ./$(DEPDIR)/DremelWriter.Po
+include ./$(DEPDIR)/ProtobufReader.Po
+include ./$(DEPDIR)/ProtobufWriter.Po
+include ./$(DEPDIR)/Query.Po
+include ./$(DEPDIR)/SqliteWriter.Po
 include ./$(DEPDIR)/epaper.pb.Po
 include ./$(DEPDIR)/ouzo_data_gen.Po
+include ./$(DEPDIR)/sqlite3.Po
+
+.c.o:
+	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
+	$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+#	source='$<' object='$@' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(COMPILE) -c $<
+
+.c.obj:
+	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
+	$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+#	source='$<' object='$@' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(COMPILE) -c `$(CYGPATH_W) '$<'`
+
+sqlite3.o: conversion/sqlite/sqlite3.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT sqlite3.o -MD -MP -MF $(DEPDIR)/sqlite3.Tpo -c -o sqlite3.o `test -f 'conversion/sqlite/sqlite3.c' || echo '$(srcdir)/'`conversion/sqlite/sqlite3.c
+	$(am__mv) $(DEPDIR)/sqlite3.Tpo $(DEPDIR)/sqlite3.Po
+#	source='conversion/sqlite/sqlite3.c' object='sqlite3.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o sqlite3.o `test -f 'conversion/sqlite/sqlite3.c' || echo '$(srcdir)/'`conversion/sqlite/sqlite3.c
+
+sqlite3.obj: conversion/sqlite/sqlite3.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT sqlite3.obj -MD -MP -MF $(DEPDIR)/sqlite3.Tpo -c -o sqlite3.obj `if test -f 'conversion/sqlite/sqlite3.c'; then $(CYGPATH_W) 'conversion/sqlite/sqlite3.c'; else $(CYGPATH_W) '$(srcdir)/conversion/sqlite/sqlite3.c'; fi`
+	$(am__mv) $(DEPDIR)/sqlite3.Tpo $(DEPDIR)/sqlite3.Po
+#	source='conversion/sqlite/sqlite3.c' object='sqlite3.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o sqlite3.obj `if test -f 'conversion/sqlite/sqlite3.c'; then $(CYGPATH_W) 'conversion/sqlite/sqlite3.c'; else $(CYGPATH_W) '$(srcdir)/conversion/sqlite/sqlite3.c'; fi`
 
 .cc.o:
 	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -309,6 +354,20 @@ DremelWriter.obj: conversion/DremelWriter.cpp
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
 #	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o DremelWriter.obj `if test -f 'conversion/DremelWriter.cpp'; then $(CYGPATH_W) 'conversion/DremelWriter.cpp'; else $(CYGPATH_W) '$(srcdir)/conversion/DremelWriter.cpp'; fi`
 
+SqliteWriter.o: conversion/SqliteWriter.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT SqliteWriter.o -MD -MP -MF $(DEPDIR)/SqliteWriter.Tpo -c -o SqliteWriter.o `test -f 'conversion/SqliteWriter.cpp' || echo '$(srcdir)/'`conversion/SqliteWriter.cpp
+	$(am__mv) $(DEPDIR)/SqliteWriter.Tpo $(DEPDIR)/SqliteWriter.Po
+#	source='conversion/SqliteWriter.cpp' object='SqliteWriter.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o SqliteWriter.o `test -f 'conversion/SqliteWriter.cpp' || echo '$(srcdir)/'`conversion/SqliteWriter.cpp
+
+SqliteWriter.obj: conversion/SqliteWriter.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT SqliteWriter.obj -MD -MP -MF $(DEPDIR)/SqliteWriter.Tpo -c -o SqliteWriter.obj `if test -f 'conversion/SqliteWriter.cpp'; then $(CYGPATH_W) 'conversion/SqliteWriter.cpp'; else $(CYGPATH_W) '$(srcdir)/conversion/SqliteWriter.cpp'; fi`
+	$(am__mv) $(DEPDIR)/SqliteWriter.Tpo $(DEPDIR)/SqliteWriter.Po
+#	source='conversion/SqliteWriter.cpp' object='SqliteWriter.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o SqliteWriter.obj `if test -f 'conversion/SqliteWriter.cpp'; then $(CYGPATH_W) 'conversion/SqliteWriter.cpp'; else $(CYGPATH_W) '$(srcdir)/conversion/SqliteWriter.cpp'; fi`
+
 DocumentsBuilder.o: builder/DocumentsBuilder.cpp
 	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT DocumentsBuilder.o -MD -MP -MF $(DEPDIR)/DocumentsBuilder.Tpo -c -o DocumentsBuilder.o `test -f 'builder/DocumentsBuilder.cpp' || echo '$(srcdir)/'`builder/DocumentsBuilder.cpp
 	$(am__mv) $(DEPDIR)/DocumentsBuilder.Tpo $(DEPDIR)/DocumentsBuilder.Po
@@ -322,6 +381,62 @@ DocumentsBuilder.obj: builder/DocumentsBuilder.cpp
 #	source='builder/DocumentsBuilder.cpp' object='DocumentsBuilder.obj' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
 #	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o DocumentsBuilder.obj `if test -f 'builder/DocumentsBuilder.cpp'; then $(CYGPATH_W) 'builder/DocumentsBuilder.cpp'; else $(CYGPATH_W) '$(srcdir)/builder/DocumentsBuilder.cpp'; fi`
+
+Database.o: conversion/sqlite/Database.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT Database.o -MD -MP -MF $(DEPDIR)/Database.Tpo -c -o Database.o `test -f 'conversion/sqlite/Database.cpp' || echo '$(srcdir)/'`conversion/sqlite/Database.cpp
+	$(am__mv) $(DEPDIR)/Database.Tpo $(DEPDIR)/Database.Po
+#	source='conversion/sqlite/Database.cpp' object='Database.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o Database.o `test -f 'conversion/sqlite/Database.cpp' || echo '$(srcdir)/'`conversion/sqlite/Database.cpp
+
+Database.obj: conversion/sqlite/Database.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT Database.obj -MD -MP -MF $(DEPDIR)/Database.Tpo -c -o Database.obj `if test -f 'conversion/sqlite/Database.cpp'; then $(CYGPATH_W) 'conversion/sqlite/Database.cpp'; else $(CYGPATH_W) '$(srcdir)/conversion/sqlite/Database.cpp'; fi`
+	$(am__mv) $(DEPDIR)/Database.Tpo $(DEPDIR)/Database.Po
+#	source='conversion/sqlite/Database.cpp' object='Database.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o Database.obj `if test -f 'conversion/sqlite/Database.cpp'; then $(CYGPATH_W) 'conversion/sqlite/Database.cpp'; else $(CYGPATH_W) '$(srcdir)/conversion/sqlite/Database.cpp'; fi`
+
+Query.o: conversion/sqlite/Query.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT Query.o -MD -MP -MF $(DEPDIR)/Query.Tpo -c -o Query.o `test -f 'conversion/sqlite/Query.cpp' || echo '$(srcdir)/'`conversion/sqlite/Query.cpp
+	$(am__mv) $(DEPDIR)/Query.Tpo $(DEPDIR)/Query.Po
+#	source='conversion/sqlite/Query.cpp' object='Query.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o Query.o `test -f 'conversion/sqlite/Query.cpp' || echo '$(srcdir)/'`conversion/sqlite/Query.cpp
+
+Query.obj: conversion/sqlite/Query.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT Query.obj -MD -MP -MF $(DEPDIR)/Query.Tpo -c -o Query.obj `if test -f 'conversion/sqlite/Query.cpp'; then $(CYGPATH_W) 'conversion/sqlite/Query.cpp'; else $(CYGPATH_W) '$(srcdir)/conversion/sqlite/Query.cpp'; fi`
+	$(am__mv) $(DEPDIR)/Query.Tpo $(DEPDIR)/Query.Po
+#	source='conversion/sqlite/Query.cpp' object='Query.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o Query.obj `if test -f 'conversion/sqlite/Query.cpp'; then $(CYGPATH_W) 'conversion/sqlite/Query.cpp'; else $(CYGPATH_W) '$(srcdir)/conversion/sqlite/Query.cpp'; fi`
+
+ProtobufWriter.o: conversion/ProtobufWriter.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT ProtobufWriter.o -MD -MP -MF $(DEPDIR)/ProtobufWriter.Tpo -c -o ProtobufWriter.o `test -f 'conversion/ProtobufWriter.cpp' || echo '$(srcdir)/'`conversion/ProtobufWriter.cpp
+	$(am__mv) $(DEPDIR)/ProtobufWriter.Tpo $(DEPDIR)/ProtobufWriter.Po
+#	source='conversion/ProtobufWriter.cpp' object='ProtobufWriter.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ProtobufWriter.o `test -f 'conversion/ProtobufWriter.cpp' || echo '$(srcdir)/'`conversion/ProtobufWriter.cpp
+
+ProtobufWriter.obj: conversion/ProtobufWriter.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT ProtobufWriter.obj -MD -MP -MF $(DEPDIR)/ProtobufWriter.Tpo -c -o ProtobufWriter.obj `if test -f 'conversion/ProtobufWriter.cpp'; then $(CYGPATH_W) 'conversion/ProtobufWriter.cpp'; else $(CYGPATH_W) '$(srcdir)/conversion/ProtobufWriter.cpp'; fi`
+	$(am__mv) $(DEPDIR)/ProtobufWriter.Tpo $(DEPDIR)/ProtobufWriter.Po
+#	source='conversion/ProtobufWriter.cpp' object='ProtobufWriter.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ProtobufWriter.obj `if test -f 'conversion/ProtobufWriter.cpp'; then $(CYGPATH_W) 'conversion/ProtobufWriter.cpp'; else $(CYGPATH_W) '$(srcdir)/conversion/ProtobufWriter.cpp'; fi`
+
+ProtobufReader.o: conversion/ProtobufReader.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT ProtobufReader.o -MD -MP -MF $(DEPDIR)/ProtobufReader.Tpo -c -o ProtobufReader.o `test -f 'conversion/ProtobufReader.cpp' || echo '$(srcdir)/'`conversion/ProtobufReader.cpp
+	$(am__mv) $(DEPDIR)/ProtobufReader.Tpo $(DEPDIR)/ProtobufReader.Po
+#	source='conversion/ProtobufReader.cpp' object='ProtobufReader.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ProtobufReader.o `test -f 'conversion/ProtobufReader.cpp' || echo '$(srcdir)/'`conversion/ProtobufReader.cpp
+
+ProtobufReader.obj: conversion/ProtobufReader.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT ProtobufReader.obj -MD -MP -MF $(DEPDIR)/ProtobufReader.Tpo -c -o ProtobufReader.obj `if test -f 'conversion/ProtobufReader.cpp'; then $(CYGPATH_W) 'conversion/ProtobufReader.cpp'; else $(CYGPATH_W) '$(srcdir)/conversion/ProtobufReader.cpp'; fi`
+	$(am__mv) $(DEPDIR)/ProtobufReader.Tpo $(DEPDIR)/ProtobufReader.Po
+#	source='conversion/ProtobufReader.cpp' object='ProtobufReader.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ProtobufReader.obj `if test -f 'conversion/ProtobufReader.cpp'; then $(CYGPATH_W) 'conversion/ProtobufReader.cpp'; else $(CYGPATH_W) '$(srcdir)/conversion/ProtobufReader.cpp'; fi`
 
 .cpp.o:
 	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
