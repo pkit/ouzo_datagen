@@ -35,7 +35,7 @@ POST_UNINSTALL = :
 build_triplet = x86_64-unknown-linux-gnu
 host_triplet = x86_64-unknown-linux-gnu
 target_triplet = x86_64-unknown-linux-gnu
-bin_PROGRAMS = ouzo_datagen$(EXEEXT)
+bin_PROGRAMS = ouzo_datagen$(EXEEXT) test_main$(EXEEXT)
 subdir = src
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -54,6 +54,12 @@ am_ouzo_datagen_OBJECTS = ouzo_data_gen.$(OBJEXT) epaper.pb.$(OBJEXT) \
 	ProtobufWriter.$(OBJEXT) ProtobufReader.$(OBJEXT)
 ouzo_datagen_OBJECTS = $(am_ouzo_datagen_OBJECTS)
 ouzo_datagen_LDADD = $(LDADD)
+am_test_main_OBJECTS = test_main.$(OBJEXT) gtest-all.$(OBJEXT) \
+	DremelReader.$(OBJEXT) DremelWriter.$(OBJEXT) \
+	DocumentsBuilder.$(OBJEXT) ProtobufWriter.$(OBJEXT) \
+	ProtobufReader.$(OBJEXT) epaper.pb.$(OBJEXT)
+test_main_OBJECTS = $(am_test_main_OBJECTS)
+test_main_LDADD = $(LDADD)
 DEFAULT_INCLUDES = -I.
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -67,8 +73,8 @@ CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 CXXLD = $(CXX)
 CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
 	-o $@
-SOURCES = $(ouzo_datagen_SOURCES)
-DIST_SOURCES = $(ouzo_datagen_SOURCES)
+SOURCES = $(ouzo_datagen_SOURCES) $(test_main_SOURCES)
+DIST_SOURCES = $(ouzo_datagen_SOURCES) $(test_main_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -177,6 +183,11 @@ ouzo_datagen_SOURCES = ouzo_data_gen.cpp schema/epaper.pb.cc \
 	 conversion/sqlite/Database.cpp conversion/sqlite/Query.cpp \
 	 conversion/sqlite/sqlite3.c conversion/ProtobufWriter.cpp conversion/ProtobufReader.cpp
 
+test_main_SOURCES = test/test_main.cc test/gtest/gtest-all.cc \
+	conversion/DremelReader.cpp conversion/DremelWriter.cpp \
+	builder/DocumentsBuilder.cpp conversion/ProtobufWriter.cpp \
+	conversion/ProtobufReader.cpp schema/epaper.pb.cc
+
 all: all-am
 
 .SUFFIXES:
@@ -251,6 +262,9 @@ clean-binPROGRAMS:
 ouzo_datagen$(EXEEXT): $(ouzo_datagen_OBJECTS) $(ouzo_datagen_DEPENDENCIES) 
 	@rm -f ouzo_datagen$(EXEEXT)
 	$(CXXLINK) $(ouzo_datagen_OBJECTS) $(ouzo_datagen_LDADD) $(LIBS)
+test_main$(EXEEXT): $(test_main_OBJECTS) $(test_main_DEPENDENCIES) 
+	@rm -f test_main$(EXEEXT)
+	$(CXXLINK) $(test_main_OBJECTS) $(test_main_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -267,8 +281,10 @@ include ./$(DEPDIR)/ProtobufWriter.Po
 include ./$(DEPDIR)/Query.Po
 include ./$(DEPDIR)/SqliteWriter.Po
 include ./$(DEPDIR)/epaper.pb.Po
+include ./$(DEPDIR)/gtest-all.Po
 include ./$(DEPDIR)/ouzo_data_gen.Po
 include ./$(DEPDIR)/sqlite3.Po
+include ./$(DEPDIR)/test_main.Po
 
 .c.o:
 	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -437,6 +453,34 @@ ProtobufReader.obj: conversion/ProtobufReader.cpp
 #	source='conversion/ProtobufReader.cpp' object='ProtobufReader.obj' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
 #	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ProtobufReader.obj `if test -f 'conversion/ProtobufReader.cpp'; then $(CYGPATH_W) 'conversion/ProtobufReader.cpp'; else $(CYGPATH_W) '$(srcdir)/conversion/ProtobufReader.cpp'; fi`
+
+test_main.o: test/test_main.cc
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_main.o -MD -MP -MF $(DEPDIR)/test_main.Tpo -c -o test_main.o `test -f 'test/test_main.cc' || echo '$(srcdir)/'`test/test_main.cc
+	$(am__mv) $(DEPDIR)/test_main.Tpo $(DEPDIR)/test_main.Po
+#	source='test/test_main.cc' object='test_main.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_main.o `test -f 'test/test_main.cc' || echo '$(srcdir)/'`test/test_main.cc
+
+test_main.obj: test/test_main.cc
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_main.obj -MD -MP -MF $(DEPDIR)/test_main.Tpo -c -o test_main.obj `if test -f 'test/test_main.cc'; then $(CYGPATH_W) 'test/test_main.cc'; else $(CYGPATH_W) '$(srcdir)/test/test_main.cc'; fi`
+	$(am__mv) $(DEPDIR)/test_main.Tpo $(DEPDIR)/test_main.Po
+#	source='test/test_main.cc' object='test_main.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_main.obj `if test -f 'test/test_main.cc'; then $(CYGPATH_W) 'test/test_main.cc'; else $(CYGPATH_W) '$(srcdir)/test/test_main.cc'; fi`
+
+gtest-all.o: test/gtest/gtest-all.cc
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gtest-all.o -MD -MP -MF $(DEPDIR)/gtest-all.Tpo -c -o gtest-all.o `test -f 'test/gtest/gtest-all.cc' || echo '$(srcdir)/'`test/gtest/gtest-all.cc
+	$(am__mv) $(DEPDIR)/gtest-all.Tpo $(DEPDIR)/gtest-all.Po
+#	source='test/gtest/gtest-all.cc' object='gtest-all.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gtest-all.o `test -f 'test/gtest/gtest-all.cc' || echo '$(srcdir)/'`test/gtest/gtest-all.cc
+
+gtest-all.obj: test/gtest/gtest-all.cc
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gtest-all.obj -MD -MP -MF $(DEPDIR)/gtest-all.Tpo -c -o gtest-all.obj `if test -f 'test/gtest/gtest-all.cc'; then $(CYGPATH_W) 'test/gtest/gtest-all.cc'; else $(CYGPATH_W) '$(srcdir)/test/gtest/gtest-all.cc'; fi`
+	$(am__mv) $(DEPDIR)/gtest-all.Tpo $(DEPDIR)/gtest-all.Po
+#	source='test/gtest/gtest-all.cc' object='gtest-all.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gtest-all.obj `if test -f 'test/gtest/gtest-all.cc'; then $(CYGPATH_W) 'test/gtest/gtest-all.cc'; else $(CYGPATH_W) '$(srcdir)/test/gtest/gtest-all.cc'; fi`
 
 .cpp.o:
 	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
