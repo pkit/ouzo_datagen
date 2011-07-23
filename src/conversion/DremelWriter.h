@@ -37,7 +37,7 @@ private:
 	void write_null(int fno, char rep, char def);
 	void write_int(int fno, int32_t val, char rep, char def);
 	void write_long(int fno, int64_t val, char rep, char def);
-	void write_string(int fno, char* str,int len, char rep, char def);
+	void write_string(int fno, char* str,int32_t len, char rep, char def);
 	void write_string(int fno, string str, char rep, char def);
 };
 

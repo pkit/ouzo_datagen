@@ -12,21 +12,15 @@
 
 DremelWriter::DremelWriter()
 {
-
 }
 
 DremelWriter::~DremelWriter()
 {
-
 }
 
 void DremelWriter::open(string path)
 {
-	if (access(path.c_str(), F_OK)!=0)
-	{
-		printf("Folder %s is not exist or no permission access\n", path.c_str());
-		exit(1);
-	}
+	assert(access(path.c_str(), F_OK)==0);
 	const Descriptor* desc = Document::descriptor();
 	open_files_for(desc, path);
 }
@@ -202,13 +196,9 @@ void DremelWriter::open_files_for(const Descriptor* desc, string path)
 			string level_name = name + ".level";
 			string data_name = name + ".dremel";
 			levels[number] = fopen(level_name.c_str(), "wb");
+			assert(levels[number]);
 			datas[number] = fopen(data_name.c_str(), "wb");
-			if ((!levels[number]) || (!datas[number]))
-			{
-				perror("Can not open file for writing.\n");
-				exit(1);
-			}
-
+			assert(datas[number]);
 		}
 
 	}
@@ -238,6 +228,7 @@ void DremelWriter::close_files_for(const Descriptor* desc)
 
 void DremelWriter::write_null(int fno, char rep, char def)
 {
+	assert(levels[fno]);
 	char level[2];
 	level[0] = rep;
 	level[1] = def;
@@ -247,6 +238,8 @@ void DremelWriter::write_null(int fno, char rep, char def)
 
 void DremelWriter::write_int(int fno, int32_t val, char rep, char def)
 {
+	assert(levels[fno]);
+	assert(datas[fno]);
 	char level[2];
 	level[0] = rep;
 	level[1] = def;
@@ -256,13 +249,13 @@ void DremelWriter::write_int(int fno, int32_t val, char rep, char def)
 
 void DremelWriter::write_long(int fno, int64_t val, char rep, char def)
 {
+	assert(levels[fno]);
+	assert(datas[fno]);
 	char level[2];
 	level[0] = rep;
 	level[1] = def;
 	fwrite(level, 2, 1, levels[fno]);
 	fwrite(&val, 8, 1, datas[fno]);
-
-	//cout << fno << "\t" << (int) rep << "\t" << (int) def << "\t" << val << "\n";
 }
 
 static inline size_t hash_code(const char* s)
@@ -273,8 +266,10 @@ static inline size_t hash_code(const char* s)
 	return ret;
 }
 
-void DremelWriter::write_string(int fno, char* str, int len, char rep, char def)
+void DremelWriter::write_string(int fno, char* str, int32_t len, char rep, char def)
 {
+	assert(levels[fno]);
+	assert(datas[fno]);
 	char tmp[4];
 	tmp[0] = rep;
 	tmp[1] = def;
@@ -302,10 +297,12 @@ void DremelWriter::write_string(int fno, char* str, int len, char rep, char def)
 
 void DremelWriter::write_string(int fno, string str, char rep, char def)
 {
+	assert(levels[fno]);
+	assert(datas[fno]);
 	char tmp[4];
 	tmp[0] = rep;
 	tmp[1] = def;
-	int len = str.length();
+	int32_t len = str.length();
 	fwrite(tmp, 2, 1, levels[fno]);
 	fwrite(&len, 4, 1, datas[fno]);
 
@@ -326,7 +323,5 @@ void DremelWriter::write_string(int fno, string str, char rep, char def)
 	int padding_count = len % 4;
 	padding_count++; //null terminal C string
 	fwrite(tmp, padding_count, 1, datas[fno]); //one byte for c string end indicator, one for padding
-
-	//cout << fno << "\t" << (int) rep << "\t" << (int) def << "\t" << str << "\n";
 }
 

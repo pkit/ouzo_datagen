@@ -84,6 +84,11 @@ DocumentsBuilder::~DocumentsBuilder()
 	{
 		free(product_names[i]);
 	}
+
+	for (int i = 0; i < 100000; i++)
+	{
+		free(new_country[i]);
+	}
 }
 
 void DocumentsBuilder::fillSale(Document_Sales* sale)
@@ -317,7 +322,6 @@ bool DocumentsBuilder::compare(Document* d1, Document* d2)
 	if (d1 == d2) return true;
 	string s1 = d1->SerializeAsString();
 	string s2 = d2->SerializeAsString();
-
 	if (s1 == s2) return true;
 	return false;
 }

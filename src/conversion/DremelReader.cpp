@@ -289,7 +289,9 @@ void DremelReader::open_files_for(const Descriptor* desc, string path)
 			string level_name = name + ".level";
 			string data_name = name + ".dremel";
 			levels[number] = fopen(level_name.c_str(), "rb");
+			assert(levels[number]);
 			datas[number] = fopen(data_name.c_str(), "rb");
+			assert(datas[number]);
 
 			struct stat buf;
 			fstat(fileno(levels[number]), &buf);
@@ -313,6 +315,7 @@ bool DremelReader::take(int fno, char& rep, char& def)
 
 bool DremelReader::head(int fno, char& rep, char& def)
 {
+	assert(levels[fno]);
 	if (ftell(levels[fno]) == level_len[fno])
 	{
 		rep = -1;
@@ -330,6 +333,7 @@ bool DremelReader::head(int fno, char& rep, char& def)
 
 int32_t DremelReader::read_int(int fno)
 {
+	assert(datas[fno]);
 	int32_t ret;
 	fread(&ret, 4, 1, datas[fno]);
 	return ret;
@@ -337,6 +341,7 @@ int32_t DremelReader::read_int(int fno)
 
 int64_t DremelReader::read_long(int fno)
 {
+	assert(datas[fno]);
 	int64_t ret;
 	fread(&ret, 8, 1, datas[fno]);
 	return ret;
@@ -344,6 +349,7 @@ int64_t DremelReader::read_long(int fno)
 
 string DremelReader::read_string(int fno)
 {
+	assert(datas[fno]);
 	int32_t len;
 	fread(&len, 4, 1, datas[fno]);
 	size_t hashcode;
@@ -360,7 +366,6 @@ string DremelReader::read_string(int fno)
 
 void DremelReader::close_files_for(const Descriptor* desc)
 {
-
 	int count = desc->field_count();
 
 	for (int i = 0; i < count; i++)
@@ -380,5 +385,4 @@ void DremelReader::close_files_for(const Descriptor* desc)
 			fclose(datas[number]);
 		}
 	}
-
 }
