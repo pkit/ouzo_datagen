@@ -25,10 +25,10 @@ int randint()
 	return rand();
 }
 
-//generates a psuedo-random integer between 0 and max
+//generates a psuedo-random integer between 0 and max-1
 int randint(int max)
 {
-	return int((double)max * rand() / (RAND_MAX + 1.0));
+	return int((double)(max-1) * rand() / (RAND_MAX + 1.0));
 }
 
 //generates a psuedo-random integer between min and max
